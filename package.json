@@ -1,0 +1,32 @@
+{
+  "name": "invocrux-labs-ia-tools",
+  "version": "1.0.0",
+  "description": "AI-powered inventory management system for learning tools, agents, and RAG",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "tools",
+    "agents",
+    "rag",
+    "supabase",
+    "typescript"
+  ],
+  "author": "Invocrux",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.78.0",
+    "dotenv": "^17.2.3",
+    "openai": "^6.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
