@@ -20,7 +20,17 @@ export async function detectarIntenciones(mensaje: string): Promise<string[]> {
   const mensajes: IMessagesInput[] = [{ role: "user", content: prompt }];
   const respuesta = await consultarLLM(mensajes);
 
-  const contenido = respuesta.choices[0].message.content;
+  let contenido = respuesta.choices[0].message.content;
+  contenido = contenido.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+  console.log("🔍 Respuesta del detector:", contenido); // <-- Agregar esto
+  try {
+    const resultado = JSON.parse(contenido);
+    return resultado.agentes;
+  } catch (error) {
+    console.error("❌ Error parseando JSON:", contenido);
+    return []; // Retornar vacío si falla
+  }
   const resultado = JSON.parse(contenido);
 
   return resultado.agentes;

@@ -22,9 +22,9 @@ async function procesarAgente(
   metadata: IMetadataAgente,
 ): Promise<string> {
   const toolsDelAgente = filtrarToolsPorAgente(metadata.tools);
-  const systemPrompt = `Eres un experto en ${metadata.descripcion}. Responde en español.`;
+  
   const mensajes: IMessagesInput[] = [
-    { role: "system", content: systemPrompt },
+    { role: "system", content: metadata.systemPrompt },
     { role: "user", content: mensaje },
   ];
 
@@ -48,6 +48,8 @@ async function procesarAgente(
 
       const args = JSON.parse(toolCall.function.arguments);
       const resultadoTool = await ejecutarTool(toolCall.function.name, args);
+      
+      console.log(`📦 Tool ejecutada: ${toolCall.function.name}`, resultadoTool);
 
       mensajes.push({
         role: "assistant",
@@ -61,6 +63,9 @@ async function procesarAgente(
       });
 
       respuesta = await consultarLLM(mensajes, toolsDelAgente);
+      
+      console.log("🔄 Siguiente respuesta:", JSON.stringify(respuesta.choices[0].message, null, 2));
+      
       toolCalls = respuesta.choices[0].message.tool_calls || [];
     }
   }
@@ -70,9 +75,9 @@ async function procesarAgente(
 export async function orquestador(mensaje: string): Promise<string> {
   const agentesDetectados = await detectarIntenciones(mensaje);
   let respuestaFinal = "";
-
+  
   for (const nombreAgente of agentesDetectados) {
-    const metadata = detectarAgente(nombreAgente);
+    const metadata: IMetadataAgente | undefined= detectarAgente(nombreAgente);
 
     if (!metadata) {
       respuestaFinal += `Agente ${nombreAgente} no encontrado.\n`;

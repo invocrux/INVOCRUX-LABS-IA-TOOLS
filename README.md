@@ -19,30 +19,6 @@ TypeScript application implementing a multi-pass LLM agent pattern with tool cal
 3. **Loop detection** - Prevents infinite loops by detecting repeated tool calls
 4. **Response generation** - LLM returns final natural language response
 
-### Project Structure
-
-```
-src/
-├── index.ts                      (Main orchestrator with multi-tool support)
-├── services/
-│   ├── supabase.ts              (Supabase database client)
-│   └── llmService.service.ts    (LLM API communication)
-├── functions/
-│   ├── listarProducto.ts        (List all products)
-│   ├── crearProducto.ts         (Create product with duplicate validation)
-│   ├── actualizarProducto.ts    (Update product)
-│   ├── eliminarProducto.ts      (Delete product)
-│   └── buscarProducto.ts        (Search products by name)
-├── tools/
-│   ├── definitions.ts           (Tool definitions for LLM - OpenAI format)
-│   ├── toolRegistry.ts          (Dynamic tool function mapping)
-│   └── index.ts
-├── interfaces/
-│   └── interface.ts             (TypeScript types)
-├── prompts/
-│   └── systemPrompt.ts          (System prompts for LLM)
-└── tsconfig.json
-```
 
 ## 🚀 Running the Application
 
@@ -116,7 +92,7 @@ Follows OpenAI tool calling format with proper parameter definitions.
 - [x] Duplicate product validation
 
 ### Level 2 🚧 (In Progress)
-- [ ] Agents with conditional logic
+- [x] Agents with conditional logic
 - [ ] RAG (Retrieval-Augmented Generation)
 - [ ] Specialized agents (search, update, reports)
 

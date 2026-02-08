@@ -28,7 +28,7 @@ export interface ILLMMessage {
 }
 
 export interface IMessagesInput {
-    role: "user" | "assistant" | "tool";
+    role: "user" | "system" | "assistant" | "tool";
     content?: string;
     tool_call_id?: string;
     name?: string;
@@ -77,4 +77,11 @@ export interface Usage {
     prompt_tokens:     number;
     completion_tokens: number;
     total_tokens:      number;
+}
+
+export interface IMetadataAgente{
+    nombre: string;
+    descripcion: string;
+    tools: string[];
+    systemPrompt: string;
 }
