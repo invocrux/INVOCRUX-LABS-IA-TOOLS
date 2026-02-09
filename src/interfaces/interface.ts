@@ -13,7 +13,7 @@ export interface IParameters {
   type: string;
   properties: {
     [key: string]: {
-      type: string;
+      type: "string" | "number" | "boolean";
       description: string;
     };
   };

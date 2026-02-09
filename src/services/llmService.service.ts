@@ -7,7 +7,7 @@ import { SYSTEM_PROMPT_INITIAL } from "../prompts/systemPrompt";
 import { tools } from "../tools";
 
 const LLM_URL = "http://127.0.0.1:1234/v1/chat/completions";
-const LLM_MODEL = "meta-llama.llama-3.3-70b-instruct";
+const LLM_MODEL = "qwen2.5-72b-instruct";
 
 export async function consultarLLM(
   mensajes: IMessagesInput[],
