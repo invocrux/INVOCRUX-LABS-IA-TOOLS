@@ -7,7 +7,6 @@ async function listarProductoEnSupa(): Promise<string> {
     throw new Error("Error al listar los productos: " + error.message);
   }
 
-  console.log("resultado de busqueda", data);
   if (!data || data.length === 0)
     return "No encontré ningún producto en el inventario.";
   return JSON.stringify(data);

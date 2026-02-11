@@ -15,7 +15,8 @@ const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
 export async function ejecutarTool(nombre: string, args: any): Promise<string> {
   const toolFunction = toolRegistry[nombre];
   if (!toolFunction) throw new Error(`Herramienta no encontrada: ${nombre}`);
-  return await toolFunction(args);
+  const resultado = await toolFunction(args);
+  return resultado;
 }
 
 export default toolRegistry;

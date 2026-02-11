@@ -1,51 +1,43 @@
-import "dotenv/config";
-import { ChatOpenAI, ClientOptions } from "@langchain/openai";
-import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
-import {
-  ChatPromptTemplate,
-  MessagesPlaceholder,
-} from "@langchain/core/prompts";
-import { langChainTools } from "./toolDefinitions";
-
-const config: ClientOptions = {
-  baseURL: "http://127.0.0.1:1234/v1",
-};
+import * as readline from "readline";
+import { crearAgente } from "./agente";
 
 async function main() {
-  const llm = new ChatOpenAI({
-    model: "qwen2.5-72b-instruct",
-    temperature: 0,
-    apiKey: "",
-    configuration: config,
+  console.log("🍎 Frutería Invocrux - Chat Interactivo");
+  console.log("Escribí tu mensaje o 'salir' para terminar.\n");
+
+  const executor = await crearAgente();
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
 
-  const prompt = ChatPromptTemplate.fromMessages([
-    [
-      "system",
-      "Sos un asistente de inventario de frutería. Usá tools cuando haga falta. No inventes datos. Responde en español.",
-    ],
-    ["human", "{input}"],
-    new MessagesPlaceholder("agent_scratchpad"),
-  ]);
+  const preguntar = () => {
+    rl.question("Vos: ", async (input) => {
+      const mensaje = input.trim();
 
-  const agent = createToolCallingAgent({
-    llm,
-    tools: langChainTools,
-    prompt,
-  });
+      if (mensaje.toLowerCase() === "salir") {
+        console.log("\n👋 ¡Hasta luego!");
+        rl.close();
+        return;
+      }
 
-  const executor = new AgentExecutor({
-    agent,
-    tools: langChainTools,
-    verbose: true,
-  });
+      if (!mensaje) {
+        preguntar();
+        return;
+      }
 
-  const result = await executor.invoke({
-    input:
-      "Listame todos los productos y crea uno nuevo llamado Kiwi con 10 unidades a $3000",
-  });
+      try {
+        const resultado = await executor.invoke({ input: mensaje });
+        console.log(`\n🤖 Agente: ${resultado.output}\n`);
+      } catch (error) {
+        console.error("❌ Error:", error);
+      }
+      preguntar();
+    });
+  };
 
-  console.log("\n🤖 RESULTADO:\n", result.output);
+  preguntar();
 }
 
-main().catch(console.error);
+main();

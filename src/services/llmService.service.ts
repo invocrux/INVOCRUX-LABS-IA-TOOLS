@@ -9,7 +9,11 @@ import { tools } from "../tools";
 const LLM_URL = "http://127.0.0.1:1234/v1/chat/completions";
 const LLM_MODEL = "qwen2.5-72b-instruct";
 
-export async function consultarLLM(
+/**
+ * @deprecated Usa `llmService` del módulo langchain en su lugar
+ * Esta función será removida en la versión 2.0
+ */
+export async  function consultarLLM(
   mensajes: IMessagesInput[],
   toolsEspecificas: IToolCall[] | null = tools,
 ): Promise<ILLMResponse> {
