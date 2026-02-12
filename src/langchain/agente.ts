@@ -1,37 +1,75 @@
-import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
-import {
-  ChatPromptTemplate,
-  MessagesPlaceholder,
-} from "@langchain/core/prompts";
 import { langChainTools } from "./toolDefinitions";
-import { crearMemoria } from "./memory";
-import { ThinkingCallbackHandler } from "./callbacks";
 import { llm } from "./llmService";
-export async function crearAgente(): Promise<AgentExecutor> {
-  const prompt = ChatPromptTemplate.fromMessages([
-    [
-      "system",
-      "Sos un asistente de inventario de frutería. Tienes la capacidad de guardar contexto, Si el usuario pregunta por algo que ya hicimos o hablamos, usá esa información. Usá tools cuando haga falta. No inventes datos. Responde en español.",
-    ],
-    new MessagesPlaceholder("chat_history"),
-    ["human", "{input}"],
-    new MessagesPlaceholder("agent_scratchpad"),
-  ]);
+import { BaseMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
 
-  const agent = createToolCallingAgent({
-    llm,
-    tools: langChainTools,
-    prompt,
+export async function crearAgente() {
+  const llmWithTools = llm.bindTools(langChainTools);
+
+  // Construir un mapa para búsqueda rápida de tools
+  const toolMap: { [key: string]: any } = {};
+  langChainTools.forEach((tool) => {
+    toolMap[tool.name] = tool;
   });
 
-  const callbackHandler = new ThinkingCallbackHandler();
-  const executor = new AgentExecutor({
-    agent,
-    tools: langChainTools,
-    memory: crearMemoria(),
-    verbose: true,
-    callbacks: [callbackHandler],
-  });
+  return {
+    async invoke(input: string, history: BaseMessage[] = []) {
+      const messages: BaseMessage[] = [...history];
+      messages.push(new HumanMessage(input));
 
-  return executor;
+      let response = await llmWithTools.invoke(messages);
+      messages.push(response);
+
+      // Loop para ejecutar herramientas si es necesario
+      while (
+        response.tool_calls &&
+        Array.isArray(response.tool_calls) &&
+        response.tool_calls.length > 0
+      ) {
+        // Ejecutar TODOS los tool_calls en paralelo (multi-tool support)
+        const toolPromises = response.tool_calls.map(async (toolCall) => {
+          const toolName = toolCall.name;
+          const tool = toolMap[toolName];
+
+          if (!tool) {
+            console.warn(`Tool no encontrada: ${toolName}`);
+            return null;
+          }
+
+          try {
+            const toolResult = await tool.invoke(toolCall.args);
+            return new ToolMessage({
+              tool_call_id: (toolCall.id as string) || "unknown",
+              content: String(toolResult),
+              name: toolName,
+            });
+          } catch (error) {
+            console.error(`Error ejecutando tool ${toolName}:`, error);
+            return null;
+          }
+        });
+
+        // Esperar a que todas las tools terminen
+        const toolMessages = await Promise.all(toolPromises);
+
+        // Agregar solo los mensajes exitosos
+        toolMessages.forEach((msg) => {
+          if (msg) messages.push(msg);
+        });
+
+        response = await llmWithTools.invoke(messages);
+        messages.push(response);
+      }
+
+      // Retornar respuesta final
+      const lastAiMessage = messages
+        .slice()
+        .reverse()
+        .find((m) => m._getType && m._getType() === "ai");
+
+      return {
+        output: lastAiMessage?.content || "No se pudo generar respuesta",
+        messages,
+      };
+    },
+  };
 }

@@ -32,7 +32,42 @@ async function generarDescripcionHumana(
   }
 }
 
+function convertirParametrosAZod(parameters: IParameters): any {
+  const properties = parameters.properties || {};
+  const required = parameters.required || [];
+  const schemaObj: Record<string, any> = {};
+
+  for (const [key, prop] of Object.entries(properties)) {
+    const propType = (prop as any).type;
+
+    let zodType: any;
+    if (propType === "string") {
+      zodType = z.string();
+    } else if (propType === "number") {
+      zodType = z.number();
+    } else if (propType === "boolean") {
+      zodType = z.boolean();
+    } else {
+      zodType = z.any();
+    }
+
+    if ((prop as any).description) {
+      zodType = zodType.describe((prop as any).description);
+    }
+
+    if (!required.includes(key)) {
+      zodType = zodType.optional();
+    }
+
+    schemaObj[key] = zodType;
+  }
+
+  return z.object(schemaObj);
+}
+
 export const langChainTools = tools.map((toolDef) => {
+  const toolSchema: any = convertirParametrosAZod(toolDef.function.parameters);
+
   return tool(
     async (args: any) => {
       const toolName = toolDef.function.name;
@@ -56,31 +91,7 @@ export const langChainTools = tools.map((toolDef) => {
     {
       name: toolDef.function.name,
       description: toolDef.function.description,
-      schema: convertirParametrosAZod(toolDef.function.parameters),
-    } as any,
-  );
+      schema: toolSchema,
+    },
+  ) as any;
 });
-
-function convertirParametrosAZod(parameters: IParameters): z.ZodType {
-  const properties = parameters.properties || {};
-  const required = parameters.required || [];
-  const schemaObj: any = {};
-  for (const [key, prop] of Object.entries(properties)) {
-    let zodType: any;
-    if ((prop as any).type === "string") {
-      zodType = z.string();
-    } else if ((prop as any).type === "number") {
-      zodType = z.number();
-    } else if ((prop as any).type === "boolean") {
-      zodType = z.boolean();
-    }
-    if ((prop as any).description) {
-      zodType = zodType.describe((prop as any).description);
-    }
-    if (!required.includes(key)) {
-      zodType = zodType.optional();
-    }
-    schemaObj[key] = zodType;
-  }
-  return z.object(schemaObj);
-}

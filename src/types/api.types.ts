@@ -1,3 +1,6 @@
+import { ContentBlock } from "langchain";
+import { Text } from "openai/resources/beta/threads/messages";
+
 export enum CODIGO_ERROR {
   VALIDATION_ERROR,
   AGENT_ERROR,
@@ -5,9 +8,9 @@ export enum CODIGO_ERROR {
 }
 
 export interface IChatDataDTO {
-  respuesta: string;
-  tools_ejecutadas: string[];
-  duracion_ms: number;
+  respuesta: string | (ContentBlock | Text)[];
+  toolsEjecutadas: (string | undefined)[];
+  duracionMs: number;
   timestamp: string;
 }
 
@@ -32,7 +35,7 @@ export interface IChatResponseError {
 }
 
 // 4. Union (cualquiera de las dos)
-type IChatResponse = IChatResponseSuccess | IChatResponseError;
+export type IChatResponse = IChatResponseSuccess | IChatResponseError;
 
 // 5. Error details
 export interface IErrorResponse {

@@ -2,11 +2,11 @@
   "name": "invocrux-labs-ia-tools",
   "version": "1.0.0",
   "description": "AI-powered inventory management system for learning tools, agents, and RAG",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
-    "start": "node dist/index.js"
+    "dev": "ts-node src/server.ts",
+    "start": "node dist/server.js"
   },
   "keywords": [
     "ai",
@@ -20,16 +20,22 @@
   "author": "Invocrux",
   "license": "MIT",
   "dependencies": {
-    "@langchain/core": "^0.3.80",
-    "@langchain/openai": "^0.6.17",
+    "@langchain/core": "^1.1.22",
+    "@langchain/openai": "^1.2.7",
     "@supabase/supabase-js": "^2.78.0",
     "dotenv": "^17.2.3",
-    "langchain": "^0.3.37",
+    "express": "^5.2.1",
+    "langchain": "^1.2.21",
     "openai": "^6.17.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.2.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

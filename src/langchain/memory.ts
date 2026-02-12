@@ -1,12 +1,9 @@
-import { BufferMemory } from "langchain/memory";
-import { ConversationChain } from "langchain/chains";
+import { type BaseMessage } from "@langchain/core/messages";
 
-export function crearMemoria(): BufferMemory {
-  return new BufferMemory({
-    memoryKey: "chat_history",
-    returnMessages: true,
-    outputKey: "output",
-  });
+// En LangChain v1.x, la memoria se maneja con arrays de BaseMessage
+// Esta función retorna un array vacío que se puede usar para inicializar el historial
+export function crearMemoria(): BaseMessage[] {
+  return [];
 }
 
 

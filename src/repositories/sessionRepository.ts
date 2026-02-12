@@ -25,7 +25,7 @@ export async function saveSesion(
 ): Promise<void> {
   const { data, error } = await cliente
     .from("agent_sessions")
-    .upsert({ userId, chatHistory });
+    .upsert({ user_id: userId, chat_history: chatHistory });
 
   if (error) {
     throw new Error(`Failed to save session: ${error.message}`);

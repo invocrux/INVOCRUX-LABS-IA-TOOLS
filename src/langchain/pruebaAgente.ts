@@ -5,7 +5,8 @@ async function main() {
   console.log("🍎 Frutería Invocrux - Chat Interactivo");
   console.log("Escribí tu mensaje o 'salir' para terminar.\n");
 
-  const executor = await crearAgente();
+  const agente = await crearAgente();
+  let chatHistory: any[] = [];
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -28,8 +29,11 @@ async function main() {
       }
 
       try {
-        const resultado = await executor.invoke({ input: mensaje });
+        const resultado = await agente.invoke(mensaje, chatHistory);
         console.log(`\n🤖 Agente: ${resultado.output}\n`);
+        
+        // Guardar en historial
+        chatHistory = resultado.messages;
       } catch (error) {
         console.error("❌ Error:", error);
       }
