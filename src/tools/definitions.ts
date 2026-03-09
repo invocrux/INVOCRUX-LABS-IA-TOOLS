@@ -1,121 +1,13 @@
 import { IToolCall } from "../interfaces/interface";
 
 const tools: IToolCall[] = [
-  {
-    type: "function",
-    function: {
-      name: "listar_productos",
-      description:
-        "Lista todos los productos disponibles en el inventario.",
-      parameters: {
-        type: "object",
-        properties: {},
-        required: [],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "buscar_producto",
-      description:
-        "Busca un producto en la base de datos por su nombre y devuelve el stock y precio.",
-      parameters: {
-        type: "object",
-        properties: {
-          nombre_producto: {
-            type: "string",
-            description:
-              "El nombre del producto a buscar (ej: 'Mouse', 'laptop').",
-          },
-        },
-        required: ["nombre_producto"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "crear_producto",
-      description:
-        "Crea un nuevo producto en la base de datos.",
-      parameters: {
-        type: "object",
-        properties: {
-          nombre_producto: {
-            type: "string",
-            description:
-              "El nombre del producto a crear (ej: 'Mouse', 'laptop').",
-          },
-          cantidad_producto: {
-            type: "number",
-            description:
-              "La cantidad del producto a crear.",
-          },
-          precio_producto: {
-            type: "number",
-            description:
-              "El precio del producto a crear.",
-          },
-        },
-        required: ["nombre_producto", "cantidad_producto", "precio_producto"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "eliminar_producto",
-      description:
-        "Elimina un producto de la base de datos por su id.",
-      parameters: {
-        type: "object",
-        properties: {
-          id_producto: {
-            type: "number",
-            description:
-              "El id del producto a eliminar.",
-          },
-        },
-        required: ["id_producto"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "actualizar_producto",
-      description:
-        "Actualiza un producto de la base de datos por su id.",
-      parameters: {
-        type: "object",
-        properties: {
-          id_producto: {
-            type: "number",
-            description:
-              "El id del producto a actualizar (obligatorio).",
-          },
-          cantidad_producto: {
-            type: "number",
-            description:
-              "La nueva cantidad del producto (opcional).",
-          },
-          precio_producto: {
-            type: "number",
-            description:
-              "El nuevo precio del producto (opcional).",
-          },
-        },
-        required: ["id_producto"],
-      },
-    },
-  },
+  // ==================== HABITAT TOOLS ====================
   {
     type: "function",
     function: {
       name: "listar_proyectos",
       description:
-        "Lista todos los proyectos disponibles en Habitat.",
+        "Lista todos los proyectos disponibles en Habitat. Usar cuando el usuario pregunta por proyectos o necesita seleccionar uno.",
       parameters: {
         type: "object",
         properties: {},
@@ -123,5 +15,105 @@ const tools: IToolCall[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "listar_fases",
+      description:
+        "Lista las fases disponibles de un proyecto específico (ej: FORMULACION, EJECUCION). Usar después de identificar el proyecto.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "El ID del proyecto (UUID).",
+          },
+        },
+        required: ["proyecto_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "listar_columnas",
+      description:
+        "Lista las columnas (campos) disponibles en una fase de un proyecto. Muestra nombre y tipo de dato.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "El ID del proyecto (UUID).",
+          },
+          fase: {
+            type: "string",
+            enum: ["FORMULACION", "EJECUCION", "FACTURACION", "RECHAZADO"],
+            description: "La fase del proyecto.",
+          },
+        },
+        required: ["proyecto_id", "fase"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "buscar_beneficiarios",
+      description:
+        "Busca beneficiarios por su cédula en un proyecto. Útil para verificar si existen antes de actualizar.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "El ID del proyecto (UUID).",
+          },
+          cedulas: {
+            type: "array",
+            items: { type: "string" },
+            description: "Lista de cédulas a buscar.",
+          },
+        },
+        required: ["proyecto_id", "cedulas"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "actualizar_campo_beneficiarios",
+      description:
+        "Actualiza un campo específico para múltiples beneficiarios identificados por cédula. Usar para cambios masivos.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "El ID del proyecto (UUID).",
+          },
+          cedulas: {
+            type: "array",
+            items: { type: "string" },
+            description: "Lista de cédulas de los beneficiarios a actualizar.",
+          },
+          nombre_columna: {
+            type: "string",
+            description: "Nombre de la columna/campo a actualizar.",
+          },
+          nuevo_valor: {
+            type: "string",
+            description: "El nuevo valor a asignar.",
+          },
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario que realiza la acción.",
+          },
+        },
+        required: ["proyecto_id", "cedulas", "nombre_columna", "nuevo_valor", "usuario_id"],
+      },
+    },
+  },
 ];
+
 export default tools;

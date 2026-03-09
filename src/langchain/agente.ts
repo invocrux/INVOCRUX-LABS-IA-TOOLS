@@ -1,6 +1,11 @@
 import { langChainTools } from "./toolDefinitions";
 import { llm } from "./llmService";
-import { BaseMessage, HumanMessage, ToolMessage } from "@langchain/core/messages";
+import {
+  BaseMessage,
+  HumanMessage,
+  SystemMessage,
+  ToolMessage,
+} from "@langchain/core/messages";
 
 export async function crearAgente() {
   const llmWithTools = llm.bindTools(langChainTools);
@@ -12,8 +17,22 @@ export async function crearAgente() {
   });
 
   return {
-    async invoke(input: string, history: BaseMessage[] = []) {
-      const messages: BaseMessage[] = [...history];
+    async invoke(
+      input: string,
+      history: BaseMessage[] = [],
+      systemPrompt?: string
+    ) {
+      const messages: BaseMessage[] = [];
+
+      // System prompt primero (si existe)
+      if (systemPrompt) {
+        messages.push(new SystemMessage(systemPrompt));
+      }
+
+      // Historial de conversación
+      messages.push(...history);
+
+      // Mensaje actual del usuario
       messages.push(new HumanMessage(input));
 
       let response = await llmWithTools.invoke(messages);

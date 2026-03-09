@@ -11,10 +11,18 @@ export interface IChatDataDTO {
   timestamp: string;
 }
 
+// Contexto opcional que el frontend puede enviar
+export interface IChatContext {
+  proyectoId?: string;
+  proyectoNombre?: string;
+  fase?: string;
+}
+
 // 1. Request (lo que envía cliente)
 export interface IChatRequest {
   userId: string;
   mensaje: string;
+  contexto?: IChatContext;
 }
 
 // 2. Success (respuesta exitosa)
