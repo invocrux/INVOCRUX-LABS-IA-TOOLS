@@ -110,5 +110,18 @@ const tools: IToolCall[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "listar_proyectos",
+      description:
+        "Lista todos los proyectos disponibles en Habitat.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
+    },
+  },
 ];
 export default tools;

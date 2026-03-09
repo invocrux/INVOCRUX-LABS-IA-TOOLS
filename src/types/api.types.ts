@@ -1,6 +1,3 @@
-import { ContentBlock } from "langchain";
-import { Text } from "openai/resources/beta/threads/messages";
-
 export enum CODIGO_ERROR {
   VALIDATION_ERROR,
   AGENT_ERROR,
@@ -8,7 +5,7 @@ export enum CODIGO_ERROR {
 }
 
 export interface IChatDataDTO {
-  respuesta: string | (ContentBlock | Text)[];
+  respuesta: string;
   toolsEjecutadas: (string | undefined)[];
   duracionMs: number;
   timestamp: string;

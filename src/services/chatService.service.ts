@@ -27,7 +27,7 @@ export async function processChat(
   });
 
   return {
-    respuesta: resultado.output,
+    respuesta: String(resultado.output),
     toolsEjecutadas: toolsUsadas,
     duracionMs: duracion,
     timestamp: new Date().toISOString(),
@@ -44,19 +44,19 @@ function convertirABaseMessage(chat: IMessage[]): BaseMessage[] {
 
 function extraerTools(params: BaseMessage[]) {
   return params
-    .filter((msg) => msg.type && msg.type === "tool")
+    .filter((msg) => msg._getType() === "tool")
     .map((msg) => msg.name);
 }
 
 function convertirAIMessage(params: BaseMessage[]): IMessage[] {
   return params
     .map((msg) => {
-      const tipo = msg.type;
+      const tipo = msg._getType();
 
       if (tipo === "human") {
-        return { role: "user" as const, content: msg.content };
+        return { role: "user" as const, content: String(msg.content) };
       } else if (tipo === "ai") {
-        return { role: "assistant" as const, content: msg.content };
+        return { role: "assistant" as const, content: String(msg.content) };
       }
 
       return null;

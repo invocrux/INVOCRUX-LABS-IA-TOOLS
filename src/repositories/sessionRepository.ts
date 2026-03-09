@@ -2,21 +2,31 @@ import cliente from "../services/supabase";
 import { IMessage } from "../types/api.types";
 
 export async function cargarSesion(userId: string): Promise<IMessage[]> {
-  const { data, error } = await cliente
-    .from("agent_sessions")
-    .select("chat_history")
-    .eq("user_id", userId);
+  try {
+    const { data, error } = await cliente
+      .from("agent_sessions")
+      .select("chat_history")
+      .eq("user_id", userId);
 
-  if (error) {
-    throw new Error(`Failed to load session: ${error.message}`);
+    if (error) {
+      console.error(`Error loading session: ${error.message}`);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const chatHistory = data[0].chat_history;
+    // Si ya es objeto (JSONB), no necesita parse
+    if (typeof chatHistory === "object") {
+      return chatHistory;
+    }
+    return JSON.parse(chatHistory);
+  } catch (err) {
+    console.error(`Error in cargarSesion:`, err);
+    return [];
   }
-
-  if (!data || data.length === 0 ) {
-    return []
-  }
-
-  const chatHistory = data[0].chat_history
-  return JSON.parse(chatHistory);
 }
 
 export async function saveSesion(

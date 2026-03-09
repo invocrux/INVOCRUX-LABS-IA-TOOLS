@@ -3,6 +3,7 @@ import buscarProductoEnSupa from "../functions/buscarProducto";
 import crearProductoEnSupa from "../functions/crearProducto";
 import elimnarProductoEnSupa from "../functions/eliminarProducto";
 import listarProductoEnSupa from "../functions/listarProducto";
+import listarProyectosEnSupa from "../functions/listarProyectos";
 
 const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
   actualizar_producto: actualizarProductoEnSupa, 
@@ -10,6 +11,7 @@ const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
   crear_producto: crearProductoEnSupa, 
   eliminar_producto: elimnarProductoEnSupa,
   listar_productos: listarProductoEnSupa,
+  listar_proyectos: listarProyectosEnSupa,
 };
 
 export async function ejecutarTool(nombre: string, args: any): Promise<string> {
