@@ -9,13 +9,17 @@ export interface IFunctionDefinition {
   parameters: IParameters;
 }
 
+export interface IPropertyDefinition {
+  type: "string" | "number" | "boolean" | "array";
+  description: string;
+  enum?: string[];
+  items?: { type: string };
+}
+
 export interface IParameters {
   type: string;
   properties: {
-    [key: string]: {
-      type: "string" | "number" | "boolean";
-      description: string;
-    };
+    [key: string]: IPropertyDefinition;
   };
   required: string[];
 }
