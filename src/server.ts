@@ -1,11 +1,15 @@
 import express from "express";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import chatRouter from "./api/routes/chat.routes";
 import { errorHandler } from "./api/middleware/errorHandler";
 import { swaggerSpec } from "./config/swagger";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+// CORS - permitir requests desde cualquier origen
+app.use(cors());
 
 // Middleware para parsear JSON
 app.use(express.json());

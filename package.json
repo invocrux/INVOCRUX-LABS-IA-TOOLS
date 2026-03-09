@@ -24,6 +24,7 @@
     "@langchain/google-genai": "^0.2.18",
     "@langchain/openai": "^0.5.17",
     "@supabase/supabase-js": "^2.78.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "langchain": "^0.3.30",
@@ -33,6 +34,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.0",
     "@types/swagger-jsdoc": "^6.0.4",
