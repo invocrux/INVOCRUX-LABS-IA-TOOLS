@@ -6,7 +6,7 @@ import { errorHandler } from "./api/middleware/errorHandler";
 import { swaggerSpec } from "./config/swagger";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // 3001 para no chocar con habitat backend (3000)
 
 // CORS - permitir requests desde cualquier origen
 app.use(cors());

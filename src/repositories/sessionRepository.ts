@@ -31,11 +31,20 @@ export async function cargarSesion(userId: string): Promise<IMessage[]> {
 
 export async function saveSesion(
   userId: string,
-  chatHistory: any,
+  chatHistory: IMessage[]
 ): Promise<void> {
-  const { data, error } = await cliente
+  const { error } = await cliente
     .from("agent_sessions")
-    .upsert({ user_id: userId, chat_history: chatHistory });
+    .upsert(
+      {
+        user_id: userId,
+        chat_history: chatHistory,
+        fecha_actualizacion: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id", // Especificar la columna con unique constraint
+      }
+    );
 
   if (error) {
     throw new Error(`Failed to save session: ${error.message}`);

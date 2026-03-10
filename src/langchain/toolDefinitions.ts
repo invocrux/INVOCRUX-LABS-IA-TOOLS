@@ -38,21 +38,38 @@ function convertirParametrosAZod(parameters: IParameters): any {
   const schemaObj: Record<string, any> = {};
 
   for (const [key, prop] of Object.entries(properties)) {
-    const propType = (prop as any).type;
+    const propDef = prop as any;
+    const propType = propDef.type;
 
     let zodType: any;
+    
     if (propType === "string") {
-      zodType = z.string();
+      // Si tiene enum, usar z.enum()
+      if (propDef.enum && Array.isArray(propDef.enum)) {
+        zodType = z.enum(propDef.enum as [string, ...string[]]);
+      } else {
+        zodType = z.string();
+      }
     } else if (propType === "number") {
       zodType = z.number();
     } else if (propType === "boolean") {
       zodType = z.boolean();
+    } else if (propType === "array") {
+      // Manejar arrays - ver el tipo de items
+      const itemsType = propDef.items?.type || "string";
+      if (itemsType === "string") {
+        zodType = z.array(z.string());
+      } else if (itemsType === "number") {
+        zodType = z.array(z.number());
+      } else {
+        zodType = z.array(z.any());
+      }
     } else {
       zodType = z.any();
     }
 
-    if ((prop as any).description) {
-      zodType = zodType.describe((prop as any).description);
+    if (propDef.description) {
+      zodType = zodType.describe(propDef.description);
     }
 
     if (!required.includes(key)) {

@@ -19,13 +19,20 @@ async function listarProyectosEnSupa(): Promise<string> {
     return "No hay proyectos registrados en el sistema.";
   }
 
-  // Formatear respuesta clara para la IA
   const proyectos = data as ProyectoResumen[];
-  const lista = proyectos
-    .map((p, i) => `${i + 1}. ${p.nombre}`)
-    .join("\n");
 
-  return `Proyectos disponibles (${proyectos.length}):\n${lista}`;
+  // Formato para la IA: JSON con los datos + instrucción de cómo mostrar
+  // La IA recibe el ID pero sabe que NO debe mostrarlo al usuario
+  const respuesta = {
+    instruccion: "Muestra solo los NOMBRES de los proyectos al usuario. Los IDs son para uso interno, NO los muestres.",
+    proyectos: proyectos.map((p) => ({
+      id: p.id,
+      nombre: p.nombre,
+    })),
+    total: proyectos.length,
+  };
+
+  return JSON.stringify(respuesta);
 }
 
 export default listarProyectosEnSupa;

@@ -59,9 +59,9 @@ const tools: IToolCall[] = [
   {
     type: "function",
     function: {
-      name: "buscar_beneficiarios",
+      name: "buscar_beneficiarios_por_cedula",
       description:
-        "Busca beneficiarios por su cédula en un proyecto. Útil para verificar si existen antes de actualizar.",
+        "Busca beneficiarios por cédula (búsqueda exacta). Usar cuando el usuario proporciona números de cédula o identificación.",
       parameters: {
         type: "object",
         properties: {
@@ -76,6 +76,56 @@ const tools: IToolCall[] = [
           },
         },
         required: ["proyecto_id", "cedulas"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "buscar_beneficiarios_por_nombre",
+      description:
+        "Busca beneficiarios por nombre (búsqueda parcial). Usar cuando el usuario busca por nombre o apellido de una persona.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "El ID del proyecto (UUID).",
+          },
+          nombres: {
+            type: "array",
+            items: { type: "string" },
+            description: "Lista de nombres o apellidos a buscar.",
+          },
+        },
+        required: ["proyecto_id", "nombres"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "obtener_fase_beneficiario",
+      description:
+        "Obtiene la fase actual en la que se encuentra un beneficiario específico (FORMULACION, EJECUCION, FACTURACION, RECHAZADO). Usar cuando el usuario pregunta en qué fase está un beneficiario.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "El ID del proyecto (UUID).",
+          },
+          busqueda: {
+            type: "string",
+            description: "El valor a buscar (nombre o cédula del beneficiario).",
+          },
+          tipo_busqueda: {
+            type: "string",
+            enum: ["cedula", "nombre"],
+            description: "Tipo de búsqueda: 'cedula' para búsqueda exacta, 'nombre' para búsqueda parcial.",
+          },
+        },
+        required: ["proyecto_id", "busqueda", "tipo_busqueda"],
       },
     },
   },
