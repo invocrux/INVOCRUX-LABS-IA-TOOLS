@@ -9,7 +9,7 @@ import actualizarCampoBeneficiarios from "../functions/actualizarCampoBeneficiar
 const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
   listar_proyectos: () => listarProyectosEnSupa(),
   listar_fases: (args) => listarFasesDeProyecto(args.proyecto_id),
-  listar_columnas: (args) => listarColumnasDeProyecto(args.proyecto_id, args.fase),
+  listar_columnas: (args) => listarColumnasDeProyecto(args.proyecto_id),
   buscar_beneficiarios_por_cedula: (args) =>
     buscarBeneficiariosPorCedula(args.proyecto_id, args.cedulas),
   buscar_beneficiarios_por_nombre: (args) =>

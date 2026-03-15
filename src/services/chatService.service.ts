@@ -48,27 +48,29 @@ Reglas importantes:
 - Responde siempre en español
 - Sé conciso y directo
 - Usa formato Markdown para estructurar las respuestas (listas, negritas, tablas)
-- Si necesitas información que no tienes, usa las herramientas disponibles
-- NO inventes datos, siempre usa las herramientas para obtener información real`;
+- SIEMPRE usa las herramientas para consultar datos, incluso si crees recordar la respuesta de mensajes anteriores
+- NUNCA inventes ni asumas datos - cada consulta debe verificarse con las herramientas`;
 
   if (userId) {
     prompt += `\n\nID del usuario actual: ${userId}`;
   }
 
   if (contexto) {
-    prompt += `\n\n--- CONTEXTO ACTUAL ---`;
+    prompt += `\n\n--- CONTEXTO ACTUAL DEL USUARIO ---`;
 
     if (contexto.proyectoId) {
-      prompt += `\nProyecto ID: ${contexto.proyectoId}`;
+      prompt += `\nproyecto_id: "${contexto.proyectoId}"`;
     }
     if (contexto.proyectoNombre) {
-      prompt += `\nProyecto: ${contexto.proyectoNombre}`;
+      prompt += `\nNombre del proyecto: "${contexto.proyectoNombre}"`;
     }
     if (contexto.fase) {
       prompt += `\nFase actual: ${contexto.fase}`;
     }
 
-    prompt += `\n\nUsa este contexto para las operaciones. Si el usuario pide algo relacionado con "este proyecto" o "la fase actual", usa estos valores.`;
+    prompt += `\n
+Usa el proyecto_id del contexto SOLO cuando el usuario se refiera a "este proyecto" o no especifique cuál.
+Si el usuario menciona OTRO proyecto por nombre o posición, DEBES usar listar_proyectos primero para obtener su ID.`;
   }
 
   return prompt;

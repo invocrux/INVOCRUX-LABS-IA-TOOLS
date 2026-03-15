@@ -50,3 +50,14 @@ export async function saveSesion(
     throw new Error(`Failed to save session: ${error.message}`);
   }
 }
+
+export async function clearSesion(userId: string): Promise<void> {
+  const { error } = await cliente
+    .from("agent_sessions")
+    .delete()
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(`Failed to clear session: ${error.message}`);
+  }
+}

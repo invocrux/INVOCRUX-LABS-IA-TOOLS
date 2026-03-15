@@ -7,7 +7,7 @@ const tools: IToolCall[] = [
     function: {
       name: "listar_proyectos",
       description:
-        "Lista todos los proyectos disponibles en Habitat. Usar cuando el usuario pregunta por proyectos o necesita seleccionar uno.",
+        "Lista todos los proyectos disponibles con sus IDs. OBLIGATORIO usar esta herramienta cuando el usuario menciona un proyecto por nombre o posición (ej: 'el segundo proyecto', 'proyecto BAQ25') y necesitas obtener su proyecto_id para otras operaciones.",
       parameters: {
         type: "object",
         properties: {},
@@ -26,7 +26,7 @@ const tools: IToolCall[] = [
         properties: {
           proyecto_id: {
             type: "string",
-            description: "El ID del proyecto (UUID).",
+            description: "UUID del proyecto (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). NO es el nombre del proyecto.",
           },
         },
         required: ["proyecto_id"],
@@ -38,21 +38,16 @@ const tools: IToolCall[] = [
     function: {
       name: "listar_columnas",
       description:
-        "Lista las columnas (campos) disponibles en una fase de un proyecto. Muestra nombre y tipo de dato.",
+        "Lista las columnas (campos) disponibles en un proyecto. Muestra nombre y tipo de dato. Los campos son globales al proyecto, no específicos de una fase.",
       parameters: {
         type: "object",
         properties: {
           proyecto_id: {
             type: "string",
-            description: "El ID del proyecto (UUID).",
-          },
-          fase: {
-            type: "string",
-            enum: ["FORMULACION", "EJECUCION", "FACTURACION", "RECHAZADO"],
-            description: "La fase del proyecto.",
+            description: "UUID del proyecto (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). NO es el nombre del proyecto.",
           },
         },
-        required: ["proyecto_id", "fase"],
+        required: ["proyecto_id"],
       },
     },
   },
@@ -61,13 +56,13 @@ const tools: IToolCall[] = [
     function: {
       name: "buscar_beneficiarios_por_cedula",
       description:
-        "Busca beneficiarios por cédula (búsqueda exacta). Usar cuando el usuario proporciona números de cédula o identificación.",
+        "Busca beneficiarios por cédula (búsqueda exacta) en un proyecto específico. Si el usuario menciona otro proyecto, primero usa listar_proyectos para obtener el proyecto_id correcto.",
       parameters: {
         type: "object",
         properties: {
           proyecto_id: {
             type: "string",
-            description: "El ID del proyecto (UUID).",
+            description: "UUID del proyecto (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). NO es el nombre del proyecto. Obtener de listar_proyectos o del contexto.",
           },
           cedulas: {
             type: "array",
@@ -84,13 +79,13 @@ const tools: IToolCall[] = [
     function: {
       name: "buscar_beneficiarios_por_nombre",
       description:
-        "Busca beneficiarios por nombre (búsqueda parcial). Usar cuando el usuario busca por nombre o apellido de una persona.",
+        "Busca beneficiarios por nombre (búsqueda parcial) en un proyecto específico. Si el usuario menciona otro proyecto, primero usa listar_proyectos para obtener el proyecto_id correcto.",
       parameters: {
         type: "object",
         properties: {
           proyecto_id: {
             type: "string",
-            description: "El ID del proyecto (UUID).",
+            description: "UUID del proyecto (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). NO es el nombre del proyecto. Obtener de listar_proyectos o del contexto.",
           },
           nombres: {
             type: "array",
@@ -113,7 +108,7 @@ const tools: IToolCall[] = [
         properties: {
           proyecto_id: {
             type: "string",
-            description: "El ID del proyecto (UUID).",
+            description: "UUID del proyecto (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). NO es el nombre del proyecto.",
           },
           busqueda: {
             type: "string",
@@ -134,22 +129,22 @@ const tools: IToolCall[] = [
     function: {
       name: "actualizar_campo_beneficiarios",
       description:
-        "Actualiza un campo específico para múltiples beneficiarios identificados por cédula. Usar para cambios masivos.",
+        "Actualiza un campo específico para múltiples beneficiarios. ANTES de usar esta herramienta DEBES: 1) Usar buscar_beneficiarios_por_nombre o buscar_beneficiarios_por_cedula para obtener la cédula real del beneficiario, 2) Usar listar_columnas para conocer el nombre exacto de la columna a actualizar (ej: puede llamarse 'CC' en lugar de 'cedula').",
       parameters: {
         type: "object",
         properties: {
           proyecto_id: {
             type: "string",
-            description: "El ID del proyecto (UUID).",
+            description: "UUID del proyecto (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). NO es el nombre del proyecto.",
           },
           cedulas: {
             type: "array",
             items: { type: "string" },
-            description: "Lista de cédulas de los beneficiarios a actualizar.",
+            description: "Lista de cédulas (números de identificación) de los beneficiarios. NO nombres. Obtener con buscar_beneficiarios_por_nombre si solo conoces el nombre.",
           },
           nombre_columna: {
             type: "string",
-            description: "Nombre de la columna/campo a actualizar.",
+            description: "Nombre EXACTO de la columna a actualizar (tal como aparece en listar_columnas). Ejemplo: 'CC' no 'cedula', 'Nombre Completo' no 'nombre'.",
           },
           nuevo_valor: {
             type: "string",

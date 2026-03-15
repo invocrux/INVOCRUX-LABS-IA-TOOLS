@@ -1,4 +1,5 @@
 import cliente from "../services/supabase";
+import { resolveProyectoId } from "./helpers/resolveProyectoId";
 
 interface ResultadoActualizacion {
   actualizados: number;
@@ -9,12 +10,22 @@ interface ResultadoActualizacion {
  * Actualiza un campo específico para múltiples beneficiarios identificados por cédula.
  */
 async function actualizarCampoBeneficiarios(
-  proyectoId: string,
+  proyectoIdOrName: string,
   cedulas: string[],
   nombreColumna: string,
   nuevoValor: string,
   usuarioId: string
 ): Promise<string> {
+  console.log(`🔍 [actualizarCampoBeneficiarios] proyectoId: "${proyectoIdOrName}"`);
+  console.log(`🔍 [actualizarCampoBeneficiarios] cedulas: ${JSON.stringify(cedulas)}`);
+  console.log(`🔍 [actualizarCampoBeneficiarios] columna: "${nombreColumna}", valor: "${nuevoValor}"`);
+
+  // Resolver el proyecto_id (puede venir como nombre o UUID)
+  const proyectoId = await resolveProyectoId(proyectoIdOrName);
+  if (!proyectoId) {
+    return `No se encontró el proyecto "${proyectoIdOrName}".`;
+  }
+
   const resultado: ResultadoActualizacion = {
     actualizados: 0,
     errores: [],

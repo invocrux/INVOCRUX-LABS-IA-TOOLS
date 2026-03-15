@@ -1,10 +1,17 @@
 import cliente from "../services/supabase";
+import { resolveProyectoId } from "./helpers/resolveProyectoId";
 
 /**
  * Lista las fases disponibles de un proyecto.
  * Las fases son fijas (ENUM), pero solo mostramos las que tienen campos configurados.
  */
-async function listarFasesDeProyecto(proyectoId: string): Promise<string> {
+async function listarFasesDeProyecto(proyectoIdOrName: string): Promise<string> {
+  // Resolver el proyecto_id (puede venir como nombre o UUID)
+  const proyectoId = await resolveProyectoId(proyectoIdOrName);
+  if (!proyectoId) {
+    return `No se encontró el proyecto "${proyectoIdOrName}".`;
+  }
+
   // Obtener fases que tienen campos personalizados configurados
   const { data, error } = await cliente
     .from("campo_personalizado")

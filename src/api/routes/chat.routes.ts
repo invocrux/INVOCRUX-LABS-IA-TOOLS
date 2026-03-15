@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { handleChat } from "../controllers/chatController.controller";
+import { handleGetSession, handleClearSession } from "../controllers/sessionController.controller";
 import { health } from "../controllers/health.controller";
 
 /**
@@ -59,6 +60,8 @@ import { health } from "../controllers/health.controller";
 
 const chatRouter = Router();
 chatRouter.post("/chat", handleChat);
+chatRouter.get("/chat/session", handleGetSession);
+chatRouter.delete("/chat/session", handleClearSession);
 chatRouter.get("/health", health);
 
 export default chatRouter;

@@ -1,14 +1,24 @@
 import cliente from "../services/supabase";
+import { resolveProyectoId } from "./helpers/resolveProyectoId";
 
 /**
  * Obtiene la fase actual de un beneficiario específico.
  * Puede buscar por cédula o por nombre.
  */
 async function obtenerFaseBeneficiario(
-  proyectoId: string,
+  proyectoIdOrName: string,
   busqueda: string,
   tipoBusqueda: "cedula" | "nombre" = "nombre"
 ): Promise<string> {
+  console.log(`🔍 [obtenerFaseBeneficiario] proyectoId recibido: "${proyectoIdOrName}"`);
+  console.log(`🔍 [obtenerFaseBeneficiario] busqueda: "${busqueda}", tipo: "${tipoBusqueda}"`);
+
+  // Resolver el proyecto_id (puede venir como nombre o UUID)
+  const proyectoId = await resolveProyectoId(proyectoIdOrName);
+  if (!proyectoId) {
+    return `No se encontró el proyecto "${proyectoIdOrName}".`;
+  }
+
   // 1. Encontrar el campo según el tipo de búsqueda
   let campoQuery = cliente
     .from("campo_personalizado")

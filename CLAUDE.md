@@ -35,19 +35,24 @@ npm start
 src/
 ├── server.ts                    # Express server (port 3001 local, dynamic in prod)
 ├── api/
-│   └── controllers/
-│       └── chatController.controller.ts   # Chat endpoint, receives context
+│   ├── controllers/
+│   │   ├── chatController.controller.ts   # Chat endpoint, receives context
+│   │   └── sessionController.controller.ts # Session management (get/clear)
+│   └── routes/
+│       └── chat.routes.ts       # POST /api/chat, GET/DELETE /api/chat/session
 ├── services/
 │   ├── chatService.service.ts   # Builds system prompt with context
 │   └── supabase.ts              # Supabase client
 ├── repositories/
-│   └── sessionRepository.ts     # Session persistence (upsert with onConflict)
+│   └── sessionRepository.ts     # Session persistence (upsert, get, clear)
 ├── langchain/
 │   ├── agente.ts                # LangChain agent with tool execution loop
 │   ├── llmService.ts            # OpenAI LLM configuration
 │   └── toolDefinitions.ts       # Converts tool definitions to LangChain format
 ├── functions/                   # Tool implementations (one file per tool)
 │   ├── index.ts                 # Barrel export
+│   ├── helpers/
+│   │   └── resolveProyectoId.ts # Resolves UUID or project name to valid UUID
 │   ├── listarProyectos.ts
 │   ├── listarFases.ts
 │   ├── listarColumnas.ts
@@ -70,11 +75,22 @@ src/
 |------|-------------|
 | `listar_proyectos` | Lists all available projects (returns JSON with instruction to hide IDs from user) |
 | `listar_fases` | Lists phases of a specific project |
-| `listar_columnas` | Lists columns/fields in a project phase |
+| `listar_columnas` | Lists columns/fields of a project (global, not phase-specific) |
 | `buscar_beneficiarios_por_cedula` | Exact search by cedula/ID |
-| `buscar_beneficiarios_por_nombre` | Partial search by name (searches all "nombre" fields) |
+| `buscar_beneficiarios_por_nombre` | Partial search by name, returns name + cedula for each match |
 | `obtener_fase_beneficiario` | Gets the current phase of a specific beneficiary |
 | `actualizar_campo_beneficiarios` | Bulk updates a field for multiple beneficiaries by cedula |
+
+## Helper Functions
+
+### `resolveProyectoId(proyectoIdOrName: string)`
+
+Located in `src/functions/helpers/resolveProyectoId.ts`. All tools use this helper to:
+1. Accept either a UUID or project name
+2. Validate that the UUID exists in the database (prevents fake UUIDs)
+3. Search by name if not a valid UUID
+
+This prevents the LLM from inventing fake UUIDs or passing project names where IDs are expected.
 
 ## Adding New Tools
 
@@ -213,13 +229,18 @@ Deployed as a Web Service on Render.
 
 The frontend (`habitat-v2`) communicates with this backend via:
 
-- **Endpoint:** `POST /api/chat`
+### Chat Endpoint
+- **POST `/api/chat`**
 - **Request:** `{ message: string, context?: IChatContext }`
 - **Response:** `{ response: string }`
 
+### Session Management
+- **GET `/api/chat/session?userId=xxx`** - Get existing session history
+- **DELETE `/api/chat/session?userId=xxx`** - Clear session (New Chat)
+
 ### Realtime Updates
 
-When the AI modifies data (via `actualizar_campo_beneficiarios`), the Habitat frontend automatically refreshes using **Supabase Realtime** subscriptions on `valor_campo_beneficiario` table.
+When the AI modifies data (via `actualizar_campo_beneficiarios`), the Habitat frontend detects changes using **Supabase Realtime** subscriptions on `valor_campo_beneficiario` table. Instead of auto-reloading (which caused infinite loops), the frontend shows a **visual indicator** on the refresh button, prompting the user to manually reload.
 
 ## Logging
 

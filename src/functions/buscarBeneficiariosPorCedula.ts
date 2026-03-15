@@ -1,4 +1,5 @@
 import cliente from "../services/supabase";
+import { resolveProyectoId } from "./helpers/resolveProyectoId";
 
 interface ResultadoBusqueda {
   cedula: string;
@@ -11,9 +12,18 @@ interface ResultadoBusqueda {
  * Usa el campo marcado como es_identificador = true.
  */
 async function buscarBeneficiariosPorCedula(
-  proyectoId: string,
+  proyectoIdOrName: string,
   cedulas: string[]
 ): Promise<string> {
+  console.log(`🔍 [buscarBeneficiariosPorCedula] proyectoId recibido: "${proyectoIdOrName}"`);
+  console.log(`🔍 [buscarBeneficiariosPorCedula] cedulas a buscar: ${JSON.stringify(cedulas)}`);
+
+  // Resolver el proyecto_id (puede venir como nombre o UUID)
+  const proyectoId = await resolveProyectoId(proyectoIdOrName);
+  if (!proyectoId) {
+    return `No se encontró el proyecto "${proyectoIdOrName}".`;
+  }
+
   // Encontrar el campo identificador (cédula)
   const { data: campo, error: errorCampo } = await cliente
     .from("campo_personalizado")
@@ -21,6 +31,9 @@ async function buscarBeneficiariosPorCedula(
     .eq("proyecto_id", proyectoId)
     .eq("es_identificador", true)
     .single();
+  
+  console.log(`🔍 [buscarBeneficiariosPorCedula] campo encontrado: ${JSON.stringify(campo)}`);
+  console.log(`🔍 [buscarBeneficiariosPorCedula] error: ${JSON.stringify(errorCampo)}`);
 
   if (errorCampo || !campo) {
     return "No se encontró un campo identificador (cédula) configurado en este proyecto.";
