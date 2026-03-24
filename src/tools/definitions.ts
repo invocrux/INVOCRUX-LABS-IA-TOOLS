@@ -159,6 +159,90 @@ const tools: IToolCall[] = [
       },
     },
   },
+  // ==================== EXCEL + PROJECT CREATION TOOLS ====================
+  {
+    type: "function",
+    function: {
+      name: "obtener_excel_subido",
+      description:
+        "Obtiene el resumen del archivo Excel que el usuario subió. Usar cuando el usuario dice que subió un archivo, acaba de cargar un Excel, o quieres ver los datos del archivo. Retorna columnas, cantidad de filas, muestra de datos y estado de configuración.",
+      parameters: {
+        type: "object",
+        properties: {
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario que subió el archivo.",
+          },
+        },
+        required: ["usuario_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "configurar_proyecto_excel",
+      description:
+        "Configura paso a paso los parámetros para crear un proyecto NUEVO desde el Excel subido. Usar para establecer: nombre del proyecto, campo identificador, y mapeo de columnas. Cada llamada actualiza UN aspecto. IMPORTANTE: Al configurar 'campo_identificador', el mapeo de columnas se genera automáticamente. Cuando la configuración esté completa, usar previsualizar_proyecto_excel (NO buscar el proyecto en la base de datos, aún no existe).",
+      parameters: {
+        type: "object",
+        properties: {
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario.",
+          },
+          campo: {
+            type: "string",
+            enum: ["nombre_proyecto", "campo_identificador", "mappings"],
+            description:
+              "Qué aspecto configurar: 'nombre_proyecto' para el nombre, 'campo_identificador' para la columna que identifica únicamente a cada beneficiario (ej: cédula), 'mappings' para mapeo personalizado de columnas.",
+          },
+          valor: {
+            type: "string",
+            description:
+              "El valor a establecer. Para 'nombre_proyecto': el nombre. Para 'campo_identificador': nombre exacto de la columna Excel (el mapeo se genera automáticamente, NO necesitas enviar mappings manualmente). Para 'mappings': JSON string con array de {excelColumn, fieldName, dataType, esIdentificador, esBasico}. IMPORTANTE: dataType SOLO acepta: TEXTO, NUMERO, FECHA, BOOLEAN.",
+          },
+        },
+        required: ["usuario_id", "campo", "valor"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "previsualizar_proyecto_excel",
+      description:
+        "Muestra un resumen completo de cómo quedará el proyecto NUEVO antes de crearlo. Usar cuando el usuario quiere ver el mapeo de columnas, confirmar la configuración, o antes de crear el proyecto. Esta herramienta lee los datos del Excel temporal, NO busca en la base de datos. SIEMPRE usar antes de crear_proyecto_desde_excel.",
+      parameters: {
+        type: "object",
+        properties: {
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario.",
+          },
+        },
+        required: ["usuario_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "crear_proyecto_desde_excel",
+      description:
+        "Crea el proyecto completo en Habitat usando el Excel subido y la configuración acumulada. SOLO usar cuando: 1) La configuración está completa (nombre, identificador, mappings), 2) Ya se usó previsualizar_proyecto_excel, 3) El usuario confirmó que desea crear el proyecto. Inserta proyecto, campos, beneficiarios y valores.",
+      parameters: {
+        type: "object",
+        properties: {
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario que crea el proyecto.",
+          },
+        },
+        required: ["usuario_id"],
+      },
+    },
+  },
 ];
 
 export default tools;

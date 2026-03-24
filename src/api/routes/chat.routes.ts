@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { handleChat } from "../controllers/chatController.controller";
+import { handleUpload } from "../controllers/uploadController.controller";
 import { handleGetSession, handleClearSession } from "../controllers/sessionController.controller";
 import { health } from "../controllers/health.controller";
+import upload from "../middleware/upload";
 
 /**
  * @swagger
@@ -60,6 +62,7 @@ import { health } from "../controllers/health.controller";
 
 const chatRouter = Router();
 chatRouter.post("/chat", handleChat);
+chatRouter.post("/chat/upload", upload.single("archivo"), handleUpload);
 chatRouter.get("/chat/session", handleGetSession);
 chatRouter.delete("/chat/session", handleClearSession);
 chatRouter.get("/health", health);

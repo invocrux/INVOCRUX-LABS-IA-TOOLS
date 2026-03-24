@@ -5,6 +5,10 @@ import buscarBeneficiariosPorCedula from "../functions/buscarBeneficiariosPorCed
 import buscarBeneficiariosPorNombre from "../functions/buscarBeneficiariosPorNombre";
 import obtenerFaseBeneficiario from "../functions/obtenerFaseBeneficiario";
 import actualizarCampoBeneficiarios from "../functions/actualizarCampoBeneficiarios";
+import obtenerExcelSubido from "../functions/obtenerExcelSubido";
+import configurarProyectoExcel from "../functions/configurarProyectoExcel";
+import previsualizarProyectoExcel from "../functions/previsualizarProyectoExcel";
+import crearProyectoDesdeExcel from "../functions/crearProyectoDesdeExcel";
 
 const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
   listar_proyectos: () => listarProyectosEnSupa(),
@@ -24,6 +28,14 @@ const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
       args.nuevo_valor,
       args.usuario_id
     ),
+  // Excel + Project Creation Tools
+  obtener_excel_subido: (args) => obtenerExcelSubido(args.usuario_id),
+  configurar_proyecto_excel: (args) =>
+    configurarProyectoExcel(args.usuario_id, args.campo, args.valor),
+  previsualizar_proyecto_excel: (args) =>
+    previsualizarProyectoExcel(args.usuario_id),
+  crear_proyecto_desde_excel: (args) =>
+    crearProyectoDesdeExcel(args.usuario_id),
 };
 
 export async function ejecutarTool(nombre: string, args: any): Promise<string> {
