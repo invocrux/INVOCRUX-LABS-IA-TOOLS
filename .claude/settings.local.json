@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx ng:*)",
+      "Bash(find C:UsersRobertoDeLaCruzDocumentsINVOCRUX-LABS-IA-TOOLS -type d -name *supabase* -o -type d -name *db* -o -type d -name *database*)",
+      "Bash(grep -r \"TEXTO\\\\|NUMERO\\\\|FECHA\\\\|BOOLEANO\\\\|email\\\\|url\" C:UsersRobertoDeLaCruzDocumentsINVOCRUX-LABS-IA-TOOLSsrc --include=*.ts)"
+    ]
+  }
+}

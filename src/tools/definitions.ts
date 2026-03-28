@@ -159,6 +159,265 @@ const tools: IToolCall[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "agregar_columna_proyecto",
+      description:
+        "Crea una nueva columna (campo personalizado) en un proyecto, igual que el modal de agregar campo. Si no se especifica fase, usa FORMULACION por defecto. Si define proceso ETAPA y la etapa ya existe, la herramienta pide confirmación (forzar_desplazamiento_etapa=true) antes de desplazar la etapa actual.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description:
+              "UUID o nombre del proyecto. Si viene nombre, se resolverá internamente al UUID correcto.",
+          },
+          nombre_columna: {
+            type: "string",
+            description: "Nombre exacto de la nueva columna a crear.",
+          },
+          tipo_dato: {
+            type: "string",
+            enum: ["TEXTO", "NUMERO", "FECHA", "BOOLEAN"],
+            description: "Tipo de dato de la columna.",
+          },
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario que realiza la acción.",
+          },
+          fase: {
+            type: "string",
+            enum: ["FORMULACION", "EJECUCION", "FACTURACION", "RECHAZADO"],
+            description: "Fase donde se asocia la columna. Opcional; por defecto FORMULACION.",
+          },
+          valor_por_defecto: {
+            type: "string",
+            description:
+              "Valor por defecto opcional para inicializar este campo en todos los beneficiarios existentes.",
+          },
+          define_proceso: {
+            type: "boolean",
+            description: "Si true, la columna define proceso (INICIO, ETAPA o FIN).",
+          },
+          tipo_proceso: {
+            type: "string",
+            enum: ["INICIO", "ETAPA", "FIN"],
+            description: "Tipo de proceso cuando define_proceso=true.",
+          },
+          numero_etapa: {
+            type: "number",
+            description: "Número de etapa (requerido cuando tipo_proceso=ETAPA).",
+          },
+          forzar_desplazamiento_etapa: {
+            type: "boolean",
+            description:
+              "Usar true solo después de confirmar con el usuario cuando hay conflicto de etapa ETAPA.",
+          },
+        },
+        required: ["proyecto_id", "nombre_columna", "tipo_dato", "usuario_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "editar_columna_proyecto",
+      description:
+        "Edita una columna existente de un proyecto (nombre, tipo de dato y/o fase). No permite editar la columna identificadora. Antes de editar, usa listar_columnas para confirmar nombre exacto.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "UUID o nombre del proyecto.",
+          },
+          nombre_columna_actual: {
+            type: "string",
+            description: "Nombre actual exacto de la columna que se quiere editar.",
+          },
+          nuevo_nombre_columna: {
+            type: "string",
+            description: "Nuevo nombre para la columna (opcional).",
+          },
+          nuevo_tipo_dato: {
+            type: "string",
+            enum: ["TEXTO", "NUMERO", "FECHA", "BOOLEAN"],
+            description: "Nuevo tipo de dato (opcional).",
+          },
+          nueva_fase: {
+            type: "string",
+            enum: ["FORMULACION", "EJECUCION", "FACTURACION", "RECHAZADO"],
+            description: "Nueva fase para asociar la columna (opcional).",
+          },
+        },
+        required: ["proyecto_id", "nombre_columna_actual"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "eliminar_columna_proyecto",
+      description:
+        "Elimina una columna de un proyecto. Como es una acción destructiva, primero devuelve confirmación requerida. Solo elimina cuando confirmar_eliminacion=true.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "UUID o nombre del proyecto.",
+          },
+          nombre_columna: {
+            type: "string",
+            description: "Nombre exacto de la columna a eliminar.",
+          },
+          confirmar_eliminacion: {
+            type: "boolean",
+            description: "Debe ser true para ejecutar la eliminación definitiva.",
+          },
+        },
+        required: ["proyecto_id", "nombre_columna"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "previsualizar_columna_generada",
+      description:
+        "Prepara y valida una columna generada a partir de otras columnas, devolviendo un bloque técnico de pre-ejecución. Esta herramienta NO crea nada; se usa para confirmar con el usuario antes de ejecutar.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "UUID o nombre del proyecto.",
+          },
+          nombre_columna_destino: {
+            type: "string",
+            description: "Nombre de la nueva columna a crear.",
+          },
+          columnas_fuente: {
+            type: "array",
+            items: { type: "string" },
+            description: "Columnas origen en el orden en que deben aplicarse.",
+          },
+          descripcion_regla: {
+            type: "string",
+            description: "Texto corto de la regla interpretada por la IA en lenguaje natural.",
+          },
+          modo: {
+            type: "string",
+            enum: ["UNIR_TEXTO", "OPERACION_NUMERICA"],
+            description: "Modo interno para ejecutar la generación.",
+          },
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario que ejecuta la acción.",
+          },
+          fase: {
+            type: "string",
+            enum: ["FORMULACION", "EJECUCION", "FACTURACION", "RECHAZADO"],
+            description: "Fase asociada para la nueva columna. Opcional; por defecto FORMULACION.",
+          },
+          separador: {
+            type: "string",
+            description: "Separador a usar en modo UNIR_TEXTO. Por defecto espacio.",
+          },
+          operador: {
+            type: "string",
+            enum: ["SUMA", "RESTA", "MULTIPLICACION", "DIVISION"],
+            description: "Operador cuando modo=OPERACION_NUMERICA.",
+          },
+          tipo_resultado: {
+            type: "string",
+            enum: ["TEXTO", "NUMERO", "FECHA", "BOOLEAN"],
+            description: "Tipo de dato final de la columna destino.",
+          },
+        },
+        required: [
+          "proyecto_id",
+          "nombre_columna_destino",
+          "columnas_fuente",
+          "descripcion_regla",
+          "modo",
+          "usuario_id",
+        ],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "crear_columna_generada",
+      description:
+        "Crea y calcula la columna generada para todos los beneficiarios. SOLO ejecutar después de confirmación explícita del usuario y con confirmado=true.",
+      parameters: {
+        type: "object",
+        properties: {
+          proyecto_id: {
+            type: "string",
+            description: "UUID o nombre del proyecto.",
+          },
+          nombre_columna_destino: {
+            type: "string",
+            description: "Nombre de la nueva columna a crear.",
+          },
+          columnas_fuente: {
+            type: "array",
+            items: { type: "string" },
+            description: "Columnas origen en el orden en que deben aplicarse.",
+          },
+          descripcion_regla: {
+            type: "string",
+            description: "Texto corto de la regla interpretada por la IA en lenguaje natural.",
+          },
+          modo: {
+            type: "string",
+            enum: ["UNIR_TEXTO", "OPERACION_NUMERICA"],
+            description: "Modo interno para ejecutar la generación.",
+          },
+          usuario_id: {
+            type: "string",
+            description: "ID del usuario que ejecuta la acción.",
+          },
+          confirmado: {
+            type: "boolean",
+            description: "Debe ser true para ejecutar esta acción destructiva/creación.",
+          },
+          fase: {
+            type: "string",
+            enum: ["FORMULACION", "EJECUCION", "FACTURACION", "RECHAZADO"],
+            description: "Fase asociada para la nueva columna. Opcional; por defecto FORMULACION.",
+          },
+          separador: {
+            type: "string",
+            description: "Separador a usar en modo UNIR_TEXTO. Por defecto espacio.",
+          },
+          operador: {
+            type: "string",
+            enum: ["SUMA", "RESTA", "MULTIPLICACION", "DIVISION"],
+            description: "Operador cuando modo=OPERACION_NUMERICA.",
+          },
+          tipo_resultado: {
+            type: "string",
+            enum: ["TEXTO", "NUMERO", "FECHA", "BOOLEAN"],
+            description: "Tipo de dato final de la columna destino.",
+          },
+        },
+        required: [
+          "proyecto_id",
+          "nombre_columna_destino",
+          "columnas_fuente",
+          "descripcion_regla",
+          "modo",
+          "usuario_id",
+          "confirmado",
+        ],
+      },
+    },
+  },
   // ==================== EXCEL + PROJECT CREATION TOOLS ====================
   {
     type: "function",

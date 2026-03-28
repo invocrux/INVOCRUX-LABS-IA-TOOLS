@@ -5,6 +5,11 @@ import buscarBeneficiariosPorCedula from "../functions/buscarBeneficiariosPorCed
 import buscarBeneficiariosPorNombre from "../functions/buscarBeneficiariosPorNombre";
 import obtenerFaseBeneficiario from "../functions/obtenerFaseBeneficiario";
 import actualizarCampoBeneficiarios from "../functions/actualizarCampoBeneficiarios";
+import agregarColumnaProyecto from "../functions/agregarColumnaProyecto";
+import editarColumnaProyecto from "../functions/editarColumnaProyecto";
+import eliminarColumnaProyecto from "../functions/eliminarColumnaProyecto";
+import previsualizarColumnaGenerada from "../functions/previsualizarColumnaGenerada";
+import crearColumnaGenerada from "../functions/crearColumnaGenerada";
 import obtenerExcelSubido from "../functions/obtenerExcelSubido";
 import configurarProyectoExcel from "../functions/configurarProyectoExcel";
 import previsualizarProyectoExcel from "../functions/previsualizarProyectoExcel";
@@ -27,6 +32,60 @@ const toolRegistry: { [key: string]: (args: any) => Promise<string> } = {
       args.nombre_columna,
       args.nuevo_valor,
       args.usuario_id
+    ),
+  agregar_columna_proyecto: (args) =>
+    agregarColumnaProyecto(
+      args.proyecto_id,
+      args.nombre_columna,
+      args.tipo_dato,
+      args.usuario_id,
+      args.fase,
+      args.valor_por_defecto,
+      args.define_proceso,
+      args.tipo_proceso,
+      args.numero_etapa,
+      args.forzar_desplazamiento_etapa,
+    ),
+  editar_columna_proyecto: (args) =>
+    editarColumnaProyecto(
+      args.proyecto_id,
+      args.nombre_columna_actual,
+      args.nuevo_nombre_columna,
+      args.nuevo_tipo_dato,
+      args.nueva_fase,
+    ),
+  eliminar_columna_proyecto: (args) =>
+    eliminarColumnaProyecto(
+      args.proyecto_id,
+      args.nombre_columna,
+      args.confirmar_eliminacion,
+    ),
+  previsualizar_columna_generada: (args) =>
+    previsualizarColumnaGenerada(
+      args.proyecto_id,
+      args.nombre_columna_destino,
+      args.columnas_fuente,
+      args.descripcion_regla,
+      args.modo,
+      args.usuario_id,
+      args.fase,
+      args.separador,
+      args.operador,
+      args.tipo_resultado,
+    ),
+  crear_columna_generada: (args) =>
+    crearColumnaGenerada(
+      args.proyecto_id,
+      args.nombre_columna_destino,
+      args.columnas_fuente,
+      args.descripcion_regla,
+      args.modo,
+      args.usuario_id,
+      args.confirmado,
+      args.fase,
+      args.separador,
+      args.operador,
+      args.tipo_resultado,
     ),
   // Excel + Project Creation Tools
   obtener_excel_subido: (args) => obtenerExcelSubido(args.usuario_id),
