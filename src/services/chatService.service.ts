@@ -97,11 +97,20 @@ NO uses listar_proyectos, buscar_beneficiarios, ni ninguna herramienta de consul
 Solo usa las herramientas de Excel: obtener_excel_subido, configurar_proyecto_excel, previsualizar_proyecto_excel, crear_proyecto_desde_excel.
 
 Pasos del flujo de creación desde Excel:
-1. Cuando el usuario dice que subió un archivo → usa obtener_excel_subido para ver el resumen
+1. Cuando el usuario dice que subió un archivo → usa obtener_excel_subido para ver el resumen (muestra todas las columnas disponibles)
 2. Pregunta al usuario el NOMBRE del proyecto → usa configurar_proyecto_excel con campo="nombre_proyecto"
-3. Pregunta cuál columna es el IDENTIFICADOR único (como cédula) → usa configurar_proyecto_excel con campo="campo_identificador"
-   (Al configurar el identificador, el sistema auto-genera el mapeo de todas las columnas)
+3. Pregunta si desea importar TODAS las columnas o SOLO ALGUNAS.
+   - Si el usuario quiere importar SOLO ALGUNAS columnas:
+     a. Usa configurar_proyecto_excel con campo="columnas_a_incluir" y valor=JSON array con los nombres exactos. Ej: valor='["Nombre","Cedula","Municipio"]'
+     b. DESPUÉS configura el identificador: configurar_proyecto_excel con campo="campo_identificador"
+     (El auto-mapping usará SOLO las columnas de columnas_a_incluir)
+   - Si el usuario quiere importar TODAS las columnas:
+     a. Solo configura el identificador: configurar_proyecto_excel con campo="campo_identificador"
+     (El auto-mapping usará todas las columnas del Excel)
+   NUNCA asumas que el usuario quiere todas las columnas si explícitamente mencionó solo algunas.
+   NUNCA inviertas el orden: columnas_a_incluir SIEMPRE debe configurarse ANTES que campo_identificador.
 4. Cuando el usuario quiera ver el mapeo o confirmar → usa previsualizar_proyecto_excel (NO busques el proyecto en la base de datos)
+   Muestra al usuario: cuántas columnas se importarán vs. el total del Excel, el aviso si es selección parcial.
 5. Cuando el usuario confirme que todo está correcto → usa crear_proyecto_desde_excel
 6. El proyecto SOLO existe en el sistema DESPUÉS de usar crear_proyecto_desde_excel
 

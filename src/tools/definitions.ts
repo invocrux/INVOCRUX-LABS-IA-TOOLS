@@ -442,7 +442,7 @@ const tools: IToolCall[] = [
     function: {
       name: "configurar_proyecto_excel",
       description:
-        "Configura paso a paso los parámetros para crear un proyecto NUEVO desde el Excel subido. Usar para establecer: nombre del proyecto, campo identificador, y mapeo de columnas. Cada llamada actualiza UN aspecto. IMPORTANTE: Al configurar 'campo_identificador', el mapeo de columnas se genera automáticamente. Cuando la configuración esté completa, usar previsualizar_proyecto_excel (NO buscar el proyecto en la base de datos, aún no existe).",
+        "Configura paso a paso los parámetros para crear un proyecto NUEVO desde el Excel subido. Usar para establecer: nombre del proyecto, campo identificador, selección parcial de columnas, y mapeo de columnas. Cada llamada actualiza UN aspecto. IMPORTANTE: Si el usuario pide importar SOLO ALGUNAS columnas, primero usa campo='columnas_a_incluir' con el array JSON de nombres exactos, ANTES de configurar 'campo_identificador'. Al configurar 'campo_identificador', el mapeo se genera automáticamente usando solo las columnas seleccionadas (si se configuraron). Cuando la configuración esté completa, usar previsualizar_proyecto_excel (NO buscar el proyecto en la base de datos, aún no existe).",
       parameters: {
         type: "object",
         properties: {
@@ -452,14 +452,14 @@ const tools: IToolCall[] = [
           },
           campo: {
             type: "string",
-            enum: ["nombre_proyecto", "campo_identificador", "mappings"],
+            enum: ["nombre_proyecto", "campo_identificador", "columnas_a_incluir", "mappings"],
             description:
-              "Qué aspecto configurar: 'nombre_proyecto' para el nombre, 'campo_identificador' para la columna que identifica únicamente a cada beneficiario (ej: cédula), 'mappings' para mapeo personalizado de columnas.",
+              "Qué aspecto configurar: 'nombre_proyecto' para el nombre, 'campo_identificador' para la columna que identifica únicamente a cada beneficiario (ej: cédula), 'columnas_a_incluir' para indicar explícitamente qué columnas importar (usar cuando el usuario pide importar solo algunas columnas), 'mappings' para mapeo personalizado completo de columnas.",
           },
           valor: {
             type: "string",
             description:
-              "El valor a establecer. Para 'nombre_proyecto': el nombre. Para 'campo_identificador': nombre exacto de la columna Excel (el mapeo se genera automáticamente, NO necesitas enviar mappings manualmente). Para 'mappings': JSON string con array de {excelColumn, fieldName, dataType, esIdentificador, esBasico}. IMPORTANTE: dataType SOLO acepta: TEXTO, NUMERO, FECHA, BOOLEAN.",
+              "El valor a establecer. Para 'nombre_proyecto': el nombre. Para 'campo_identificador': nombre exacto de la columna Excel (el mapeo se genera automáticamente usando solo las columnas de 'columnas_a_incluir' si fue configurado). Para 'columnas_a_incluir': JSON string con array de nombres exactos de columnas Excel a importar, ej: [\"Nombre\",\"Cedula\",\"Municipio\"]. LLAMAR ANTES de 'campo_identificador' para que el auto-mapping respete la selección. Para 'mappings': JSON string con array de {excelColumn, fieldName, dataType, esIdentificador, esBasico}. IMPORTANTE: dataType SOLO acepta: TEXTO, NUMERO, FECHA, BOOLEAN.",
           },
         },
         required: ["usuario_id", "campo", "valor"],

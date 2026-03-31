@@ -2,6 +2,7 @@ import cliente from "../services/supabase";
 
 /**
  * Muestra un resumen de cómo quedará el proyecto antes de crearlo.
+ * Incluye información sobre cuántas columnas se van a importar vs. el total del Excel.
  */
 async function previsualizarProyectoExcel(usuarioId: string): Promise<string> {
   const { data, error } = await cliente
@@ -17,6 +18,7 @@ async function previsualizarProyectoExcel(usuarioId: string): Promise<string> {
   const config = data.configuracion as {
     nombre_proyecto?: string;
     campo_identificador?: string;
+    columnas_a_incluir?: string[];
     mappings?: Array<{
       excelColumn: string;
       fieldName: string;
@@ -33,6 +35,10 @@ async function previsualizarProyectoExcel(usuarioId: string): Promise<string> {
     return `Configuración incompleta. Falta definir: ${faltante.join(", ")}`;
   }
 
+  const totalColumnasExcel = (data.columnas as string[]).length;
+  const seleccionParcial =
+    config.columnas_a_incluir && config.columnas_a_incluir.length > 0;
+
   // Muestra de datos mapeados a los nombres de campo
   const muestra = (data.datos as Record<string, string>[]).slice(0, 3).map((row) => {
     const mapped: Record<string, string> = {};
@@ -46,6 +52,12 @@ async function previsualizarProyectoExcel(usuarioId: string): Promise<string> {
     proyecto: config.nombre_proyecto,
     total_beneficiarios: data.total_filas,
     campo_identificador: config.campo_identificador,
+    columnas_totales_excel: totalColumnasExcel,
+    columnas_a_importar: config.mappings.length,
+    seleccion_parcial: seleccionParcial,
+    aviso_columnas: seleccionParcial
+      ? `⚠️ Importación parcial: se importarán ${config.mappings.length} de ${totalColumnasExcel} columnas del Excel.`
+      : `Se importarán todas las columnas del Excel (${totalColumnasExcel}).`,
     campos: config.mappings.map((m) => ({
       nombre: m.fieldName,
       tipo: m.dataType,
@@ -57,3 +69,4 @@ async function previsualizarProyectoExcel(usuarioId: string): Promise<string> {
 }
 
 export default previsualizarProyectoExcel;
+

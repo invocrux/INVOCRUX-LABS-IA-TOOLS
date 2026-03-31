@@ -11,6 +11,7 @@ interface Mapping {
 interface Configuracion {
   nombre_proyecto: string;
   campo_identificador: string;
+  columnas_a_incluir?: string[];
   mappings: Mapping[];
 }
 
@@ -37,6 +38,25 @@ async function crearProyectoDesdeExcel(usuarioId: string): Promise<string> {
   if (!config.nombre_proyecto || !config.campo_identificador || !config.mappings?.length) {
     return "Configuración incompleta. Usa configurar_proyecto_excel para completar: nombre_proyecto, campo_identificador y mappings.";
   }
+
+  // ── SEGUNDA LÍNEA DE DEFENSA ──────────────────────────────────────────────
+  // Si el usuario configuró columnas_a_incluir, filtrar los mappings para que
+  // SOLO se importen esas columnas. Esto evita que un mapping manual previo
+  // o una regeneración parcial incluya columnas que el usuario excluyó.
+  let mappingsFinal: Mapping[] = config.mappings;
+  if (config.columnas_a_incluir && config.columnas_a_incluir.length > 0) {
+    const incluidas = new Set(config.columnas_a_incluir);
+    mappingsFinal = config.mappings.filter((m) => incluidas.has(m.excelColumn));
+    if (mappingsFinal.length === 0) {
+      return "Error: el filtro de columnas_a_incluir dejó 0 columnas a importar. Verificar configuración.";
+    }
+    // Asegurarse que el identificador esté siempre incluido
+    const tieneIdentificador = mappingsFinal.some((m) => m.esIdentificador);
+    if (!tieneIdentificador) {
+      return `Error: la columna identificadora "${config.campo_identificador}" fue excluida de columnas_a_incluir. Debe estar incluida.`;
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   try {
     // 2. Crear proyecto
@@ -69,7 +89,7 @@ async function crearProyectoDesdeExcel(usuarioId: string): Promise<string> {
       return aliases[upper] || "TEXTO";
     };
 
-    const camposInsert = config.mappings.map((m, index) => ({
+    const camposInsert = mappingsFinal.map((m, index) => ({
       proyecto_id: proyectoId,
       nombre: m.fieldName,
       tipo_dato: normalizarTipo(m.dataType),
@@ -94,7 +114,7 @@ async function crearProyectoDesdeExcel(usuarioId: string): Promise<string> {
 
     // Mapa de excelColumn → campo_id
     const excelToCampoId = new Map(
-      config.mappings.map((m) => [m.excelColumn, campoMap.get(m.fieldName)])
+      mappingsFinal.map((m) => [m.excelColumn, campoMap.get(m.fieldName)])
     );
 
     // 4. Crear beneficiarios en lotes
@@ -134,7 +154,7 @@ async function crearProyectoDesdeExcel(usuarioId: string): Promise<string> {
         const row = batch[j];
         const beneficiarioId = benefs[j].id;
 
-        for (const mapping of config.mappings) {
+        for (const mapping of mappingsFinal) {
           const campoId = excelToCampoId.get(mapping.excelColumn);
           if (!campoId) continue;
 
@@ -171,6 +191,8 @@ async function crearProyectoDesdeExcel(usuarioId: string): Promise<string> {
       beneficiarios_creados: beneficiariosCreados,
       campos_creados: camposCreados.length,
       valores_insertados: valoresCreados,
+      columnas_importadas: mappingsFinal.length,
+      seleccion_parcial: (config.columnas_a_incluir?.length ?? 0) > 0,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Error desconocido";

@@ -40,6 +40,7 @@ function detectarTipoPorNombre(nombreColumna: string): TipoDato {
 interface Configuracion {
   nombre_proyecto?: string;
   campo_identificador?: string;
+  columnas_a_incluir?: string[];
   mappings?: Array<{
     excelColumn: string;
     fieldName: string;
@@ -51,6 +52,16 @@ interface Configuracion {
 
 /**
  * Configura incrementalmente los parámetros para crear un proyecto desde Excel.
+ *
+ * Campos soportados:
+ *  - "nombre_proyecto"      → nombre del nuevo proyecto
+ *  - "campo_identificador"  → columna que identifica unívocamente cada fila (ej: cédula).
+ *                             Si ya existe "columnas_a_incluir", el auto-mapping respeta esa lista.
+ *  - "columnas_a_incluir"   → JSON string con array de nombres de columnas Excel a importar.
+ *                             Llamar ANTES de "campo_identificador" para que el auto-mapping
+ *                             use solo esas columnas. Si se llama DESPUÉS y ya hay mappings,
+ *                             regenera los mappings filtrando por la nueva lista.
+ *  - "mappings"             → JSON string con array de mappings manuales completos.
  */
 async function configurarProyectoExcel(
   usuarioId: string,
@@ -74,16 +85,56 @@ async function configurarProyectoExcel(
       config.nombre_proyecto = valor;
       break;
 
-    case "campo_identificador":
+    case "columnas_a_incluir": {
+      // Parsear el array de columnas que el usuario quiere importar
+      let columnasDeseadas: string[];
+      try {
+        columnasDeseadas = JSON.parse(valor);
+        if (!Array.isArray(columnasDeseadas)) throw new Error("No es array");
+      } catch {
+        return "Error: columnas_a_incluir debe ser un JSON array de strings. Ej: [\"Nombre\",\"Cedula\",\"Municipio\"]";
+      }
+
+      // Validar que todas las columnas existan en el Excel
+      const columnasInvalidas = columnasDeseadas.filter(
+        (c) => !(data.columnas as string[]).includes(c)
+      );
+      if (columnasInvalidas.length > 0) {
+        return `Las siguientes columnas no existen en el Excel: ${columnasInvalidas.join(", ")}. Columnas disponibles: ${(data.columnas as string[]).join(", ")}`;
+      }
+
+      config.columnas_a_incluir = columnasDeseadas;
+
+      // Si ya existe un campo_identificador, regenerar mappings respetando la nueva lista
+      if (config.campo_identificador) {
+        const identificador = config.campo_identificador;
+        config.mappings = columnasDeseadas.map((col: string) => ({
+          excelColumn: col,
+          fieldName: col,
+          dataType: detectarTipoPorNombre(col),
+          esIdentificador: col === identificador,
+          esBasico: true,
+        }));
+      }
+      break;
+    }
+
+    case "campo_identificador": {
       // Validar que la columna existe
-      if (!data.columnas.includes(valor)) {
-        return `La columna "${valor}" no existe en el Excel. Columnas disponibles: ${data.columnas.join(", ")}`;
+      if (!(data.columnas as string[]).includes(valor)) {
+        return `La columna "${valor}" no existe en el Excel. Columnas disponibles: ${(data.columnas as string[]).join(", ")}`;
       }
       config.campo_identificador = valor;
 
       // Auto-generar mappings si no existen
       if (!config.mappings) {
-        config.mappings = (data.columnas as string[]).map((col: string) => ({
+        // Respetar columnas_a_incluir si ya fue configurado; si no, usar todas
+        const columnasBase: string[] =
+          config.columnas_a_incluir && config.columnas_a_incluir.length > 0
+            ? config.columnas_a_incluir
+            : (data.columnas as string[]);
+
+        config.mappings = columnasBase.map((col: string) => ({
           excelColumn: col,
           fieldName: col,
           dataType: detectarTipoPorNombre(col),
@@ -98,6 +149,7 @@ async function configurarProyectoExcel(
         }));
       }
       break;
+    }
 
     case "mappings":
       try {
@@ -113,7 +165,7 @@ async function configurarProyectoExcel(
       break;
 
     default:
-      return `Campo no reconocido: "${campo}". Usar: nombre_proyecto, campo_identificador, o mappings.`;
+      return `Campo no reconocido: "${campo}". Usar: nombre_proyecto, campo_identificador, columnas_a_incluir, o mappings.`;
   }
 
   // Guardar configuración actualizada
@@ -132,15 +184,25 @@ async function configurarProyectoExcel(
   if (!config.campo_identificador) faltante.push("campo_identificador");
   if (!config.mappings || config.mappings.length === 0) faltante.push("mappings");
 
+  const totalColumnas = (data.columnas as string[]).length;
+  const columnasImportar = config.mappings?.length ?? 0;
+  const seleccionParcial = config.columnas_a_incluir && config.columnas_a_incluir.length > 0;
+
   if (faltante.length === 0) {
     return JSON.stringify({
       mensaje: "Configuración completa. Puedes usar previsualizar_proyecto_excel para mostrar el resumen al usuario antes de crear.",
+      columnas_totales_excel: totalColumnas,
+      columnas_a_importar: columnasImportar,
+      seleccion_parcial: seleccionParcial,
       configuracion: config,
     });
   }
 
   return JSON.stringify({
     mensaje: `Configuración actualizada. Faltan: ${faltante.join(", ")}`,
+    columnas_totales_excel: totalColumnas,
+    columnas_a_importar: columnasImportar,
+    seleccion_parcial: seleccionParcial,
     configuracion: config,
   });
 }
